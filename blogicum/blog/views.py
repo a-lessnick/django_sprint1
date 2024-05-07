@@ -1,6 +1,8 @@
+from django.http import Http404
 from django.shortcuts import render
 
-posts = [
+
+posts: list[dict] = [
     {
         'id': 0,
         'location': 'Остров отчаянья',
@@ -43,20 +45,21 @@ posts = [
     },
 ]
 
+posts_dict: dict = {x['id']: x for x in posts}
+
 
 def index(request):
-    template = 'blog/index.html'
-    context = {'posts_list': posts}
-    return render(request, template, context)
+    return render(request, 'blog/index.html', {'posts_list': posts})
 
 
-def post_detail(request, id):
-    template = 'blog/detail.html'
-    context = {'post': posts[id]}
-    return render(request, template, context)
+def post_detail(request, post_id: int):
+    try:
+        context: dict = {'post': posts_dict[post_id]}
+    except KeyError:
+        raise Http404("Post does not exist")
+    return render(request, 'blog/detail.html', context)
 
 
-def category_posts(request, category_slug):
-    template = 'blog/category.html'
-    context = {'category_slug': category_slug}
-    return render(request, template, context)
+def category_posts(request, category_slug: str):
+    return render(request, 'blog/category.html',
+                  {'category_slug': category_slug})
